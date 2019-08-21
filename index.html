@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>quine-snake</title>
+    <style>
+        body {
+            background: whitesmoke;
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .quine>code {
+            display: block;
+        }
+
+        .quine>code>pre {
+            margin: 0;
+            display: inline-block;
+            width: 8px;
+        }
+
+        .snake {
+            background: green;
+        }
+
+        .apple {
+            background: red;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        (function main() {
+            const W = 70;
+            const SRC = `(${main.toString()}());`.replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\s\s+/g, ' ');
+            const SRC_ARR = (() => SRC.match(new RegExp(`.{1,${W}}`, 'g')).map(line => {
+                const chars = line.split('').map(char => {
+                    const span = document.createElement('pre');
+                    span.appendChild(document.createTextNode(char));
+                    return span;
+                });
+                const codeLine = document.createElement('code');
+                chars.forEach(char => codeLine.appendChild(char));
+                return codeLine;
+            }))();
+
+            let APPLE = randomPos();
+            const SNAKE = randomPos();
+            const SNAKE_HISTORY = [SNAKE];
+            const ROOT = document.createElement('div');
+            ROOT.classList.add('quine');
+            document.body.appendChild(ROOT);
+
+            document.onkeydown = function(e) {
+                e = e || window.event;
+                SRC_ARR[SNAKE.y].children[SNAKE.x].classList.remove('snake');
+                switch (e.keyCode) {
+                    case 37: case 65:
+                        if (SNAKE.x > 0) SNAKE.x--; break;
+                    case 38: case 87:
+                        if (SNAKE.y > 0) SNAKE.y--; break;
+                    case 39: case 68:
+                        if (SNAKE.x < W - 1) SNAKE.x++; break;
+                    case 40: case 83:
+                        if (SNAKE.y < SRC_ARR.length - 1) SNAKE.y++; break;
+                    default:
+                        return;
+                }
+                let hit = SNAKE.x === APPLE.x && SNAKE.y === APPLE.y;
+                if (hit) {
+                    SRC_ARR[APPLE.y].children[APPLE.x].classList.remove('apple');
+                    APPLE = randomPos();
+                }
+                setSnakeHistory(SNAKE.x, SNAKE.y, hit);
+                setColors();
+            };
+
+            function randomPos() {
+                return {
+                    x: (Math.random() * (W - 1)) | 0,
+                    y: (Math.random() * (SRC_ARR.length - 1)) | 0,
+                }
+            };
+
+            function setColors() {
+                SNAKE_HISTORY.forEach(snake => SRC_ARR[snake.y].children[snake.x].classList.add('snake'));
+                SRC_ARR[SNAKE.y].children[SNAKE.x].classList.add('snake');
+                SRC_ARR[APPLE.y].children[APPLE.x].classList.add('apple');
+            }
+
+            function setSnakeHistory(x, y, pop = true) {
+                SNAKE_HISTORY.push({ x, y });
+                SNAKE_HISTORY.forEach(snake => SRC_ARR[snake.y].children[snake.x].classList.remove('snake'))
+                !pop && SNAKE_HISTORY.shift();
+            }
+
+            function loop() {
+                ROOT.innerHTML = '';
+                SRC_ARR.forEach(line => ROOT.appendChild(line));
+            }
+
+            setColors();
+            loop();
+
+            // - padding comment -
+        }());
+    </script>
+</body>
+
+</html>
