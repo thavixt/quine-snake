@@ -1,0 +1,22 @@
+body {
+    background: whitesmoke;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.quine>code {
+    display: block;
+}
+
+.quine>code>pre {
+    margin: 0;
+    display: inline-block;
+    width: 8px;
+}
+
+.snake {
+    background: green;
+}
+
+.apple {
+    background: red;
+}
